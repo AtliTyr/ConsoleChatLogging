@@ -1,0 +1,20 @@
+mysql> create trigger after_insert_on_users after insert on users
+    -> for each row begin
+    -> insert into passwords(user_id) values (new.id);
+    -> end//
+
+mysql> create trigger after_delete_on_users before delete on users
+    -> for each row begin
+    -> delete from passwords where user_id = old.id;
+    -> end//
+
+mysql> create trigger after_delete_on_users2 after delete on users
+    -> for each row begin
+    -> update messages
+    -> set sender_id = 1
+    -> where sender_id = old.id;
+    -> update messages
+    -> set recepient_id = 1
+    -> where recepient_id = old.id;
+    -> delete from messages where sender_id = 1 and recepient_id = 1;
+    -> end//

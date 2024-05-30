@@ -1,0 +1,29 @@
+mysql> create table users(
+    -> id serial primary key,
+    -> second_name varchar(200) not null,
+    -> name varchar(200) not null,
+    -> email varchar(200) not null,
+    -> status varchar(7) not null default 'offline');
+Query OK, 0 rows affected (0.21 sec)
+
+mysql> alter table users
+    -> add constraint status_check check (status in ('online', 'offline'));
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> create table passwords(
+    -> user_id integer references users(id),
+    -> hash text);
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> create table messages(
+	id serial primary key,
+    -> sender_id integer references users(id),
+    -> recepient_id integer references users(id),
+    -> text text,
+    -> sent_at date,
+    -> status integer not null default 0);
+Query OK, 0 rows affected (0.17 sec)
+
+mysql> alter table messages
+    -> add constraint status_check check(status between 0 and 2);

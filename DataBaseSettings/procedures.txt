@@ -1,0 +1,57 @@
+mysql> create procedure adding_new_user(_second_name varchar(200), _name varchar(200), _email varchar(200), _hash text)
+    -> begin
+    -> insert into users(second_name, name, email) values (_second_name, _name, _email);
+    -> update passwords
+    -> set hash = _hash
+    -> where user_id = (select id from users where email = _email);
+    -> end//
+
+mysql> create procedure adding_to_messages(s_id integer, r_id integer, _message text)
+    -> begin
+    -> insert into messages(sender_id, recepient_id, text, sent_at, status) values (s_id, r_id, _message, current_date(), 0);
+    -> set @id = LAST_INSERT_ID();
+    -> set @stat = (select status from users where id = (select recepient_id from messages where id = @id));
+    -> set @comp := (select count(users.id) from users where (users.id <> s_id and users.status = 'online'));
+    -> update messages
+    -> set status = 1
+    -> where id = @id and @stat = 'online';
+    -> update messages
+    -> set status = 1
+    -> where id = @id and recepient_id = 0 and @comp > 0;
+    -> end//
+
+mysql> create procedure check_private_messages(c_id integer)
+    -> begin
+    -> select
+    -> u1.email, u2.email, m.text, m.sent_at, m.status
+    -> from messages as m
+    -> join users as u1 on u1.id = m.sender_id
+    -> join users as u2 on u2.id = m.recepient_id
+    -> where m.recepient_id <> 0 and (u1.id = c_id or u2.id = c_id);
+    -> update messages
+    -> set status = 2
+    -> where recepient_id = c_id and status <> 2;
+    -> end//
+
+mysql> create procedure check_general_messages(c_id integer)
+    -> begin
+    -> select u.email, m.text, m.sent_at
+    -> from messages as m
+    -> join users as u on u.id = m.sender_id
+    -> where m.recepient_id = 0
+    -> ;
+    -> update messages
+    -> set status = 2
+    -> where
+    -> recepient_id = 0 and status <> 2 and sender_id <> c_id;
+    -> end//
+
+mysql> create procedure users_authorization(_email varchar(200))
+    -> begin
+    -> update users
+    -> set status = 'online'
+    -> where email = _email;
+    -> update messages
+    -> set status = 1
+    -> where ( ( recepient_id = (select id from users where email = _email) ) or (recepient_id = 0 and ( sender_id <> (select id from users where email = _email) ) ) and status = 0 );
+    -> end//

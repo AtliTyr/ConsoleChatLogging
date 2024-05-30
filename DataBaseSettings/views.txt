@@ -1,0 +1,15 @@
+mysql> create view check_users_list as
+    -> select
+    -> u.second_name, u.name, u.email, u.status
+    -> from users as u
+    -> where u.id <> 1;//
+Query OK, 0 rows affected (0.12 sec)
+
+mysql> create view check_users_online_list
+    -> as
+    -> select
+    -> u.second_name, u.name, u.email, u.status
+    -> from users as u
+    -> where
+    -> u.id <> 1 and u.status = 'online';//
+Query OK, 0 rows affected (0.09 sec)
